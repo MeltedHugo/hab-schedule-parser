@@ -1,6 +1,8 @@
 # hab-schedule-parser
 Parses the current schedule of lectures at the University of Applied Sciences Aschaffenburg to JSON files
 
+At the moment, output from my own instance of this parser is synced to another repository every 30 minutes: [h-ab-schedule](https://github.com/Hugobert/h-ab-schedule). Head there if you just want access to the data.
+
 ## Binaries
 If working with source code and Node.js is too complicated for you, just download the executable suited for your system [here](https://github.com/Hugobert/hab-schedule-parser/releases/latest). These should work out of the box without the need for any other software. Keep in mind that running those will try to create a directory named "json" in the folder they are executed in.
 
