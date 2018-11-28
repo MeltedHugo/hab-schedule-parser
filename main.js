@@ -3,6 +3,7 @@ const fs = require('fs'); // To output files
 var cheerio = require('cheerio'); // To work with html data
 var cheerioTableparser = require('cheerio-tableparser'); // The most useful tool to parse those pesky tables.
 var he = require('he'); // To decode HTML entities to utf-8 strings
+var beautify = require("json-beautify"); // To output pretty-printed JSON.
 
 if (!fs.existsSync('./json')){
 	console.log("Creating directory: ./json")
@@ -109,6 +110,7 @@ function getPlan(kategorie){
 					// This checks if there is enough information. Some courses don't provide much information, this helps mitigate this problem.
 					if(vorlesung.split("<br>").length<4){
 						uhrzeit = returnLastItem(vorlesung.split("<br>")[0].split(">"));
+						ende = returnLastItem(vorlesung.split("<br>")[0].split(">")).split(" - ")[1].split(" ")[0];
 						name = he.decode(vorlesung.split("<br>")[1]);
 						gruppe = he.decode(returnLastItem(vorlesung.split("<br>")).split("</a>")[0].split("<")[0]);
 						prof = "";
@@ -116,6 +118,7 @@ function getPlan(kategorie){
 					// This is the normal behavior:
 					} else {
 						uhrzeit = returnLastItem(vorlesung.split("<br>")[0].split(">"));
+						ende = returnLastItem(vorlesung.split("<br>")[0].split(">")).split(" - ")[1].split(" ")[0]
 						name = he.decode(vorlesung.split("<br>")[1]);
 						prof = he.decode(vorlesung.split("<br>")[2]);
 						raum = he.decode(vorlesung.split("<br>")[3].split("<")[0]);
@@ -124,12 +127,13 @@ function getPlan(kategorie){
 
 					vorlesungObject = {
 						vorlesung: name,
-						datum: tag[0],
-						zeit: uhrzeit,
+						//datum: tag[0],	// These are obsolete. Use the timestamps (timestamp, ende) instead
+						//zeit: uhrzeit,	
 						dozent: prof,
 						raum: raum,
 						gruppe: gruppe,
-						timestamp: parseDate(tag[0],uhrzeit)
+						timestamp: parseDate(tag[0],uhrzeit),
+						ende: parseDate(tag[0],ende)
 					}
 
 					vorlesungArray.push(vorlesungObject)
@@ -168,8 +172,8 @@ function getPlan(kategorie){
 				parsedDate.setMinutes(oTimeStartMinutes);
 				parsedDate.setSeconds(0);
 				parsedDate.setMilliseconds(0);
-
 				parsedDate.setFullYear(fixYear(parsedDate));
+				// Timezones are confusing. On my Raspberry, these are showing local time, on my PC they are UTC.
 
 				// Since years are not provided in the table, we need to determine which year it is talking about.
 				// Usually is the current year, but can also be next year.
@@ -256,7 +260,7 @@ function makePlainLists(kategorie, all){
 
 	// Output to file
 	if (upcoming.length > 0) {
-		fs.writeFileSync("json/"+kategorie+".json", JSON.stringify(upcoming));
+		fs.writeFileSync("json/"+kategorie+".json", beautify(upcoming,null,2,80));
 		console.log("Generated successfully: "+kategorie+".json");
 	}
 
